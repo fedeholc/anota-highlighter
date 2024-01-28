@@ -524,4 +524,10 @@ chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
   if (request.command === COMMAND.ADD_HIGHLIGHT) {
     displayHighlights();
   }
+  if (
+    request.command === COMMAND.SET_HL_STATE_ON ||
+    request.command === COMMAND.SET_HL_STATE_OFF
+  ) {
+    displayAppState();
+  }
 });

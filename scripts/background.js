@@ -115,6 +115,7 @@ chrome.commands.onCommand.addListener(async function (command) {
     if (hlState === HL_STATE.ON) {
       hlState = HL_STATE.OFF;
       chrome.storage.local.set({ hlState: HL_STATE.OFF });
+      chrome.runtime.sendMessage({ command: COMMAND.SET_HL_STATE_OFF });
 
       const [activeTab] = await chrome.tabs.query({
         active: true,
@@ -128,11 +129,13 @@ chrome.commands.onCommand.addListener(async function (command) {
     } else {
       hlState = HL_STATE.ON;
       chrome.storage.local.set({ hlState: HL_STATE.ON });
+      chrome.runtime.sendMessage({ command: COMMAND.SET_HL_STATE_ON });
 
       const [activeTab] = await chrome.tabs.query({
         active: true,
         currentWindow: true,
       });
+
       if (activeTab.id && isWebPage(activeTab)) {
         chrome.tabs.sendMessage(activeTab.id, {
           command: COMMAND.SET_HL_STATE_ON,
@@ -164,6 +167,7 @@ chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
   }
 
   if (request.command === COMMAND.SET_HL_STATE_ON) {
+    console.log("recibido: SET_HL_STATE_ON");
     chrome.storage.local.set({ hlState: HL_STATE.ON }).then(() => {
       hlState = HL_STATE.ON;
     });
