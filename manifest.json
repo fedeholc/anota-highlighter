@@ -1,0 +1,64 @@
+{
+  "manifest_version": 3,
+  "name": "Highlighter",
+  "version": "0.0.1",
+  "description": "Highlighter webextension for ANOTA",
+  "key": "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAjOuGPhI9xT5JYIlTiMsrb8Ng9SvHl/1cD/c3eXuiVcW65sRWANxzqY24yzXF3SG4EF7xRR3zDhzg70MSTXHaCJvvQ0YzlQJ6y1V9s9LYwEiwGud53B2oaBt+3p0zlA8r9De+xIRb3JsKuSO4FfqJgOGr7oL9fBn8kQ0JIVYo1G7sgTvaNGHgyJdqRuPm+kHCsfAAhUQn2EkdzlCFMOGupx+L3+ATWhVCu0J1m2n4nqQQ9oAsfA3WrT6ERUoPckSc7BXEUIr3UCXZmduiFG7MDFkaXrd+HwZbKPEMxAJO9vw3a8dAsVt5SEIvx2YQbxxByWRWQFsSFsIh8PdlMMHnwwIDAQAB",
+
+  "icons": {
+    "16": "icons/icon16.png",
+    "32": "icons/icon32.png",
+    "48": "icons/icon48.png",
+    "128": "icons/icon128.png"
+  },
+  "action": {
+    "default_popup": "/sidepop/sidepop.html"
+  },
+  "commands": {
+    "toggle-hlstate": {
+      "suggested_key": {
+        "default": "Alt+Shift+H"
+      },
+      "description": "Activates/Deactivates Highlighter"
+    },
+    "_execute_action": {
+      "suggested_key": {
+        "default": "Ctrl+Shift+H"
+      }
+    }
+  },
+
+  "permissions": [
+    "sidePanel",
+    "scripting",
+    "activeTab",
+    "storage",
+    "tabs",
+    "identity",
+    "identity.email"
+  ],
+  "oauth2": {
+    "client_id": "807483221008-kpei2vd9vqd0mos6spss6369ggmjo9b9.apps.googleusercontent.com",
+    "scopes": [
+      "https://www.googleapis.com/auth/userinfo.email",
+      "https://www.googleapis.com/auth/userinfo.profile"
+    ]
+  },
+
+  "side_panel": {
+    "default_path": "sidepop/sidepop.html"
+  },
+
+  "background": {
+    "service_worker": "scripts/background.js",
+    "type": "module"
+  },
+
+  "content_scripts": [
+    {
+      "js": ["scripts/content.js"],
+      "matches": ["<all_urls>"],
+      "type": "module"
+    }
+  ]
+}
