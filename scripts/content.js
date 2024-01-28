@@ -78,8 +78,10 @@ function createHLSatusButton() {
   // checkea que no exista para no volver a crearlo
   if (!document.querySelector("#btnHLStatus")) {
     const btnHLStatus = document.createElement("div");
-    // todo: pasar a css
     btnHLStatus.id = "btnHLStatus";
+
+    // hay que manejar los estilos de este modo porque no se puede o aún no encontré la forma de hacerlo insertando css en la web en la que corre el script
+
     const initialStyle =
       "position: fixed; top: 50px; right: 10px; width:  150px; height: 40px; border: 2px solid black; box-shadow: 0px 0px 5px 0px black; background-color: rgb(255, 212, 21); border-radius: 10px; display: flex;    justify-content: center; align-items: center; font-size: 16px; font-weight: bold; color: black; text-align: center; z-index: 9999999; transition: all 0.2s ease-out;";
 
@@ -96,6 +98,7 @@ function createHLSatusButton() {
       removeHLStatusButton();
     });
 
+    // por la forma de poner los estilos, no se puede implementar el hover con css, hay que hacerlo así:
     btnHLStatus.addEventListener("mouseenter", function () {
       btnHLStatus.style.cssText = hoverStyle;
       btnHLStatus.textContent = "STOP Highlighter";
@@ -158,8 +161,7 @@ function applyStyleToNodes(nodes, styleClass) {
   // van a ser nodos de texto y no se pueden pintar
   nodes.forEach((nodo) => {
     // creamos un elemento span con el estilo nuevo para aplicar a la selección
-    var span = document.createElement("span");
-    span.classList.add(styleClass); //todo: esto está funcionando?
+    let span = document.createElement("span");
     span.style.backgroundColor = "rgb(255, 212, 21)";
     span.style.color = "black";
 
