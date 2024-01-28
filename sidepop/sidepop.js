@@ -56,13 +56,9 @@ chrome.runtime
   })
   .then((contexts) => {
     if (contexts && contexts.length > 0) {
-      console.log("ct:", contexts);
       if (contexts[0].contextType === "POPUP") {
-        console.log("POPUP");
         // @ts-ignore
         document.querySelector("body").style.maxWidth = "345px";
-      } else if (contexts[0].contextType === "SIDE_PANEL") {
-        console.log("SIDE_PANEL");
       }
     }
   });
@@ -94,52 +90,34 @@ if (hlStatusContainer) {
 
 const btnEnable = document.querySelector("#hl-enable");
 btnEnable?.addEventListener("click", async () => {
+  // mensaje al background
   chrome.runtime.sendMessage({ command: COMMAND.SET_HL_STATE_ON });
-
-  displayAppState();
-
   const [activeTab] = await chrome.tabs.query({
     active: true,
     currentWindow: true,
   });
-
-  // Verificar si la URL de la pestaña es una web
-  // para evitar: Uncaught (in promise) Error: Could not establish connection. Receiving end does not exist.
-  const tabUrl = activeTab.url || "";
-  const isWebPage =
-    tabUrl.startsWith("http://") || tabUrl.startsWith("https://");
-  if (activeTab.id && isWebPage) {
+  if (activeTab.id && isWebPage(activeTab)) {
+    // mensaje al content script
     chrome.tabs.sendMessage(activeTab.id, {
       command: COMMAND.SET_HL_STATE_ON,
     });
   }
-
-  /*   const hlAlert = document.createElement("div");
-  hlAlert.id = "hlAlert";
-  hlAlert.innerHTML = "Hola";
-  document.querySelector("body")?.appendChild(hlAlert); */
+  displayAppState();
 });
 
 const btnDisable = document.querySelector("#hl-disable");
 btnDisable?.addEventListener("click", async () => {
   chrome.runtime.sendMessage({ command: COMMAND.SET_HL_STATE_OFF });
-  displayAppState();
-
   const [activeTab] = await chrome.tabs.query({
     active: true,
     currentWindow: true,
   });
-
-  // Verificar si la URL de la pestaña es una web
-  // para evitar: Uncaught (in promise) Error: Could not establish connection. Receiving end does not exist.
-  const tabUrl = activeTab.url || "";
-  const isWebPage =
-    tabUrl.startsWith("http://") || tabUrl.startsWith("https://");
-  if (activeTab.id && isWebPage) {
+  if (activeTab.id && isWebPage(activeTab)) {
     chrome.tabs.sendMessage(activeTab.id, {
       command: COMMAND.SET_HL_STATE_OFF,
     });
   }
+  displayAppState();
 });
 
 // @ts-ignore
@@ -159,15 +137,13 @@ btnLogout?.addEventListener("click", () => {
 });
 
 const btnSaveLink = document.querySelector("#btnSaveLink");
-//TODO: checkiar si ya existe el link no volver a guardar
 btnSaveLink?.addEventListener("click", async () => {
   const tabs = await chrome.tabs.query({ active: true, currentWindow: true });
 
   /** @type {HLight} */
   let highlight = {
     text: tabs[0].title + "\n🔹<" + tabs[0].url + ">",
-    // FIXME: por algún motivo no me guarda el emoji "🔹 "
-    url: getFormattedDateTime().split(" ")[0], //FIXME: cambiar el formato fecha?
+    url: getFormattedDateTime().split(" ")[0],
     doctitle: "Saved links",
     timestamp: new Date().getTime(),
   };
@@ -184,14 +160,14 @@ btnSaveSession?.addEventListener("click", async () => {
 
   const tabsURLs = tabs
     .map((tab) => {
-      return tab.title + "\n🔹<" + tab.url + ">"; //FIXME: agregar emoji cuando se pueda
+      return tab.title + "\n🔹<" + tab.url + ">";
     })
     .join("\n\n");
 
   /** @type {HLight} */
   let highlight = {
     text: tabsURLs,
-    url: getFormattedDateTime(), //FIXME: cambiar el formato ,
+    url: getFormattedDateTime(),
     doctitle: "Saved session",
     timestamp: new Date().getTime(),
   };
@@ -212,6 +188,15 @@ chrome.commands.onCommand.addListener(function (command) {
 //*
 //* functions
 //*
+
+/**
+ * @param { chrome.tabs.Tab } tab
+ * @returns {boolean}
+ */
+function isWebPage(tab) {
+  let tabUrl = tab.url || "";
+  return tabUrl.startsWith("http://") || tabUrl.startsWith("https://");
+}
 
 function toastAlert(message) {
   document.querySelector("#toastAlert")?.remove();
@@ -250,7 +235,7 @@ function displayAppState() {
           hlLoggedOut.classList.add("hidden");
           btnLogin.classList.add("hidden");
           //btnLogout.classList.remove("hidden");
-          btnLogout.classList.add("hidden"); //FIXME: por ahora deshabilitada la opción de log out
+          btnLogout.classList.add("hidden"); //por ahora deshabilitada la opción de log out
         } else {
           hlLoggedOut.textContent = "User is logged out";
           hlLoggedOut.classList.remove("hidden");
@@ -298,8 +283,6 @@ async function displayHighlights() {
     let hlGroupElement = createHLGroupElement(hlGroup, countGroupId);
     document.querySelector(".hl-container")?.appendChild(hlGroupElement);
 
-    //todo: guardar los hl del grupo url y enviarlos a ANOTA
-    //todo: revisar si es con escaphtml o no, porque si se lo ve como texto no sirve, pero hay que ver si para anota va o no, depende si lo ponemos en innertext o en innerhtml, tal vez convenga hacer el scape ahí mismo al mostrarlo?
     //* boton enviar
     document
       .querySelector(`#button-send-group${countGroupId}`)
@@ -312,8 +295,6 @@ async function displayHighlights() {
           escapeHtml(hlGroup.title) +
           "<br>" +
           hlGroup.url;
-
-        //! acá hacer el fetch a anota
 
         let preTitle = "";
         let tags = "";
@@ -328,7 +309,7 @@ async function displayHighlights() {
           id: getFormattedDateTime(),
           noteText: joinedText,
           noteHTML: joinedText,
-          noteTitle: preTitle + escapeHtml(hlGroup.title), //FIXME: verr
+          noteTitle: preTitle + escapeHtml(hlGroup.title),
           tags: tags,
           category: "",
           deleted: false,
@@ -381,13 +362,6 @@ async function displayHighlights() {
         document.body.appendChild(enlaceDescarga);
         enlaceDescarga.click();
         document.body.removeChild(enlaceDescarga);
-
-        //   chrome.runtime.sendMessage({
-        //     command: COMMAND.DELETE_HIGHLIGHT_GROUP,
-        //     url: hlGroup.url,
-        //   });
-        //   displayHighlights();
-        //
       });
 
     //* boton delete
@@ -465,7 +439,6 @@ function createHLGroupElement(hlGroup, groupId) {
   // recorremos el array de highlights y agregamos los que corresponden a la url grupo (filtrados)
   hlGroupElement.innerHTML += hlGroup.highlights
     // @ts-ignore creo que tira error porque toReversed es muy nuevo
-    // todo: ver si se puede configurar para que revise con una version más nueva de js
     .toReversed()
     .map((item) => {
       return `
@@ -488,12 +461,8 @@ function createHLGroupElement(hlGroup, groupId) {
  * @param {string} cadena
  */
 function reemplazarSaltosDeLineaPorHTML(cadena) {
-  // Utilizar una expresión regular para buscar saltos de línea
   const regex = /(\r\n|\n|\r)/g;
-
-  // Reemplazar los saltos de línea por <br>
   const resultado = cadena.replace(regex, "<br>");
-
   return resultado;
 }
 
@@ -550,50 +519,9 @@ function escapeHtml(unsafe) {
 //*
 //* event listeners
 //*
-/* esto está para probar el fetch  a turso */
-// let boton = document.querySelector("button");
-// boton?.addEventListener("click", () => {
-//   chrome.runtime.sendMessage(
-//     { command: COMMAND.GET_HIGHLIGHTS },
-//     function (response) {
-//       /** @type {HLight[]} */
-//       let highlights = response.highlights;
-//       console.log("h para fetch:", highlights);
-//       fetch("http://localhost:3002/api", {
-//         method: "POST",
-//         headers: {
-//           "Content-Type": "application/json",
-//         },
-//         body: JSON.stringify(highlights),
-//       })
-//         .then((response) => response.json())
-//         .then((data) => {
-//           console.log("Success:", data);
-//         })
-//         .catch((error) => {
-//           console.error("Error:", error);
-//         });
-//     }
-//   );
-// });
 
-//? por ahora dejo desactivado el botón de borrar todos los highlights
-// const deleteHLButton = document.querySelector("#deleteHighlights");
-// console.log(deleteHLButton);
-// deleteHLButton?.addEventListener("click", () => {
-//   chrome.runtime.sendMessage({ command: COMMAND.DELETE_ALL_HIGHLIGHTS });
-//   displayHighlights();
-
-//   //TODO: Ojo para que se ejecute displayHighlights como callback, cuando se recibe el mensaje en el background hay que devolver algo con sendResponse, sino no se ejecuta el callback. Ver si está bien que displayHighlights se ejecute cómo está arriba después de enviar el mensaje o si es necesario como callback. ¿por caso que hubiera un error, para atraparlo??
-//   /* chrome.runtime.sendMessage({ command: COMMAND.DELETE_ALL_HIGHLIGHTS }, () => {
-//     displayHighlights();
-//   }); */
-// });
-
-/* recibe el aviso cuando hay un highlight nuevo y lo pone en la lista*/
 chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
   if (request.command === COMMAND.ADD_HIGHLIGHT) {
     displayHighlights();
   }
-  return true; // TODO: hace falta?
 });
