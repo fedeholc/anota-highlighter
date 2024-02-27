@@ -198,6 +198,11 @@ function isWebPage(tab) {
   return tabUrl.startsWith("http://") || tabUrl.startsWith("https://");
 }
 
+/**
+ * Funcion que muestra un mensaje flotante en la pantalla
+ * @param {string} message
+ * @returns {void}
+ **/
 function toastAlert(message) {
   document.querySelector("#toastAlert")?.remove();
   const toastAlert = document.createElement("div");
@@ -220,6 +225,7 @@ function displayAppState() {
       document.querySelector("#hl-status-on")?.classList.add("hidden");
     }
   });
+
   chrome.runtime.sendMessage(
     { command: COMMAND.GET_LOGIN_INFO },
     (response) => {
@@ -246,6 +252,17 @@ function displayAppState() {
       }
     }
   );
+}
+
+async function getLoginInfo() {
+  let response = await chrome.runtime.sendMessage({
+    command: COMMAND.GET_LOGIN_INFO,
+  });
+  if (response.loginInfo.state === LOGIN_STATE.IN) {
+    return response.loginInfo.email;
+  } else {
+    return "Invitado"; //TODO: ver que no quede hardcodeado
+  }
 }
 
 async function getHighlights() {
@@ -286,7 +303,7 @@ async function displayHighlights() {
     //* boton enviar
     document
       .querySelector(`#button-send-group${countGroupId}`)
-      ?.addEventListener("click", (e) => {
+      ?.addEventListener("click", async (e) => {
         let joinedText = hlGroup.highlights
           .map((text) => reemplazarSaltosDeLineaPorHTML(escapeHtml(text[0])))
           .join("<br>...<br>");
@@ -305,6 +322,9 @@ async function displayHighlights() {
           tags = "Links";
         }
 
+        let userId = await getLoginInfo();
+        console.log("userId:", userId);
+
         const note = {
           id: getFormattedDateTime(),
           noteText: joinedText,
@@ -318,12 +338,13 @@ async function displayHighlights() {
           rating: 0,
           created: getFormattedDateTime(),
           modified: getFormattedDateTime(),
+          usuario: userId,
         };
 
         toastAlert("SENT!");
-        /* const API_URL = "http://localhost:3025"; */
-        const API_URL = "https://anotaback-federicoholc.koyeb.app";
-
+        const API_URL = "http://localhost:3025";
+        /*         const API_URL = "https://anotaback-federicoholc.koyeb.app";
+         */
         fetch(API_URL, {
           method: "POST",
           headers: {
