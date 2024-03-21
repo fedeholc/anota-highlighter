@@ -1,6 +1,9 @@
+<!-- markdownlint-disable MD041 -->
+
+[README in english](https://github.com/fedeholc/anota-highlighter/blob/main/README.en.md) [![en](https://img.shields.io/badge/lang-en-red.svg)](https://github.com/fedeholc/anota-highlighter/blob/main/README.md)
+
 # Highlighter WebExtension para ANOTÁ
 
-[![en](https://img.shields.io/badge/lang-en-red.svg)](https://github.com/fedeholc/anota-highlighter/blob/main/README.md)
 Highlighter es una extensión para el navegador google chrome que permite resaltar texto en cualquier sitio web y guardar esos resaltados, para luego descargarlos o enviarlos a [ANOTA](https://github.com/fedeholc/anota-front-react). También permite guardar links individuales o la sesión completa de todos los links abiertos en el navegador.
 
 ## Recursos utilizados para su desarrollo
@@ -12,7 +15,8 @@ Highlighter es una extensión para el navegador google chrome que permite resalt
 
 ## Licencia
 
-- [![GPLv3 License](https://img.shields.io/badge/License-GPL%20v3-yellow.svg)](https://opensource.org/licenses/) Este proyecto está bajo la Licencia GPL v3 - vea el archivo [LICENSE.md](LICENSE.md) para más detalles.
+[![GPLv3 License](https://img.shields.io/badge/License-GPL%20v3-yellow.svg)](https://opensource.org/licenses/) 
+Este proyecto está bajo la Licencia GPL v3 - vea el archivo [LICENSE.md](LICENSE.md) para más detalles.
 
 ### Autor
 
